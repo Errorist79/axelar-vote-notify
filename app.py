@@ -17,7 +17,7 @@ min_status = 100
 
 ### Functions ###
 
-## register ##
+## Register ##
 def save(user_id, user_name, user_tag, API, channel_id):
     if API == None:
         API = None
@@ -72,7 +72,7 @@ def save(user_id, user_name, user_tag, API, channel_id):
     else:
         api_data.append(API)
 
-## query ##
+## Query ##
 def query(api):
     for data in response_json:
         if data["voter"] == api:
@@ -88,7 +88,7 @@ def query(api):
 async def on_ready():
     check_control_data.start()
 
-## query loop ##
+## Query loop ##
 @tasks.loop(seconds=query_time)
 async def check_control_data():
     try:
@@ -109,8 +109,8 @@ async def check_control_data():
             pass
         else:
             answer_query = query(api)
+            answer = answer_query[1]
             if answer_query[0] == False:
-                answer = answer_query[1]
                 if answer["txhash"] in txhash_data:
                     pass
                 else:
@@ -132,10 +132,6 @@ async def check_control_data():
                     txhash_data.append(txhash)
 
             elif answer_query[0] == True:
-                answer = answer_query[1]
-                sender_chain = answer["sender_chain"]
-                txhash = answer["txhash"]
-                channel_id = user["channel_id"]
                 message_list_true.append(f'<@{user["id"]}>')
 
     if int(min_status * len(api_data) / 100) + 1 > len(message_list):
@@ -149,7 +145,7 @@ async def check_control_data():
 
             await Bot.get_channel(int(channel_id)).send(f"Voting result is incompatible with the majority. You may need to check. {text_id}")
 
-## register app ##
+## Register app ##
 @Bot.event
 async def on_message(message):
     msg = await Bot.get_channel(int(message.channel.id)).fetch_message(int(message.id))
@@ -211,8 +207,8 @@ async def on_message(message):
                     await Bot.get_channel(int(message.channel.id)).send(f"Hey {text_id}, successfully saved.")
         else:
             if API == None:
-                await Bot.get_channel(int(message.channel.id)).send(f"Dear <@{msg.author.id}>, successfully deleted.")
+                await Bot.get_channel(int(message.channel.id)).send(f"Hey <@{msg.author.id}>, successfully deleted.")
             else:
-                await Bot.get_channel(int(message.channel.id)).send(f"Dear <@{msg.author.id}>, successfully saved.")
+                await Bot.get_channel(int(message.channel.id)).send(f"Hey <@{msg.author.id}>, successfully saved.")
 
 Bot.run(TOKEN)
