@@ -5,7 +5,7 @@ import json
 
 ### env ###
 TOKEN = ""
-query_time = 300
+query_time = 250
 
 Bot = commands.Bot("$")
 file_json = "data.json"
@@ -13,11 +13,11 @@ file_json = "data.json"
 api_data = []
 txhash_data = []
 global min_status
-min_status = 100
+min_status = 70
 
-### Functions ###
+### functions ###
 
-## Register ##
+## register ##
 def save(user_id, user_name, user_tag, API, channel_id):
     if API == None:
         API = None
@@ -72,7 +72,7 @@ def save(user_id, user_name, user_tag, API, channel_id):
     else:
         api_data.append(API)
 
-## Query ##
+## query ##
 def query(api):
     for data in response_json:
         if data["voter"] == api:
@@ -104,8 +104,9 @@ async def check_control_data():
     message_list = []
     message_list_true = []
     for user in file:
+        channel_id = user["channel_id"]
         api = user["api"]
-        if api == None:
+        if api == None or len(api) < 3:
             pass
         else:
             answer_query = query(api)
@@ -116,8 +117,7 @@ async def check_control_data():
                 else:
                     sender_chain = answer["sender_chain"]
                     txhash = answer["txhash"]
-                    channel_id = user["channel_id"]
-
+                    
                     data2 = []
                     for user2 in file:
                         if user2["api"] == api:
@@ -128,24 +128,25 @@ async def check_control_data():
                         text_id = text_id + " " + user_data_id
 
                     message = f"Hey {text_id}, voted ***NO*** for {sender_chain}!\nTx Hash: `{txhash}`"
-                    message_list.append(message)
+                    message_list.append([message, channel_id])
                     txhash_data.append(txhash)
 
             elif answer_query[0] == True:
-                message_list_true.append(f'<@{user["id"]}>')
+                message_list_true.append([f'<@{user["id"]}>', channel_id])
 
     if int(min_status * len(api_data) / 100) + 1 > len(message_list):
         for message_i in message_list:
-            await Bot.get_channel(int(channel_id)).send(message_i)
+            await Bot.get_channel(int(message_i[1])).send(message_i[0])
     else:
         if len(message_list_true) > 0:
             text_id = ""
             for user_data_id in message_list_true:
-                text_id = text_id + " " + user_data_id
+                text_id = text_id + " " + user_data_id[0]
+                channel_id = user_data_id[1]
 
             await Bot.get_channel(int(channel_id)).send(f"Voting result is incompatible with the majority. You may need to check. {text_id}")
 
-## Register app ##
+## register app ##
 @Bot.event
 async def on_message(message):
     msg = await Bot.get_channel(int(message.channel.id)).fetch_message(int(message.id))
@@ -156,12 +157,11 @@ async def on_message(message):
         await Bot.get_channel(int(message.channel.id)).send(f"🧾 Set the voter address```bash\n You can register as $VOTERADDRESS or $VOTERADDRESS @username @username ... ```\n🔕 Delete your voter address```bash\n If you want to delete: $delete or $delete @username @username ... ```\n```bash\n For MS: $ping ```\n```bash\n For help: $help```")
     elif msg_list[0].lower() == "$min":
         try:
+            new_min_status = int(msg_list[1])
             global min_status
-            min_status = int(msg_list[1])
+            min_status = new_min_status
             await Bot.get_channel(int(message.channel.id)).send(f"Successful & Min: {str(min_status)}")
         except:
-            global min_status
-            min_status = 30
             await Bot.get_channel(int(message.channel.id)).send(f"Please enter number.")
 
     elif msg_list[0][0] == "$":
