@@ -88,18 +88,28 @@ def query(api):
 async def on_ready():
     check_control_data.start()
 
-## Query loop ##
+## query loop ##
 @tasks.loop(seconds=query_time)
 async def check_control_data():
+    vote_true = 0
+    vote_false = 0
     try:
         file = json.load(open(file_json, "r", encoding="UTF-8"))
         global response_json
         try:
             response_json = json.loads(requests.get("https://testnet.api.axelarscan.io/evm-votes").text)["data"]
+            # response_json = json.load(open("test.json", "r", encoding="UTF-8"))["data"]
         except:
             response_json = []
+
+        for data in response_json:
+            if data["vote"] == True:
+                vote_true += 1
+            elif data["vote"] == False:
+                vote_false += 1
     except:
         file = []
+    
 
     message_list = []
     message_list_true = []
@@ -134,7 +144,7 @@ async def check_control_data():
             elif answer_query[0] == True:
                 message_list_true.append([f'<@{user["id"]}>', channel_id])
 
-    if int(min_status * len(api_data) / 100) + 1 > len(message_list):
+    if int(min_status * (vote_true + vote_false) / 100) < vote_false:
         for message_i in message_list:
             await Bot.get_channel(int(message_i[1])).send(message_i[0])
     else:
@@ -207,8 +217,8 @@ async def on_message(message):
                     await Bot.get_channel(int(message.channel.id)).send(f"Hey {text_id}, successfully saved.")
         else:
             if API == None:
-                await Bot.get_channel(int(message.channel.id)).send(f"Hey <@{msg.author.id}>, successfully deleted.")
+                await Bot.get_channel(int(message.channel.id)).send(f"Dear <@{msg.author.id}>, successfully deleted.")
             else:
-                await Bot.get_channel(int(message.channel.id)).send(f"Hey <@{msg.author.id}>, successfully saved.")
+                await Bot.get_channel(int(message.channel.id)).send(f"Dear <@{msg.author.id}>, successfully saved.")
 
 Bot.run(TOKEN)
