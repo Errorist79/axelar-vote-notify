@@ -7,13 +7,16 @@ import json
 TOKEN = ""
 query_time = 250
 
+global min_status
+min_status = 70
+
+
 Bot = commands.Bot("$")
 file_json = "data.json"
 
 api_data = []
 txhash_data = []
-global min_status
-min_status = 70
+txhash_true_data = []
 
 ### functions ###
 
@@ -142,19 +145,30 @@ async def check_control_data():
                     txhash_data.append(txhash)
 
             elif answer_query[0] == True:
-                message_list_true.append([f'<@{user["id"]}>', channel_id])
+                if answer["txhash"] in txhash_true_data:
+                    pass
+                else:
+                    txhash = answer["txhash"]
+                    
+                    data3 = []
+                    for user3 in file:
+                        if user3["api"] == api:
+                            data3.append(f'<@{user3["id"]}>')
 
-    if int(min_status * (vote_true + vote_false) / 100) < vote_false:
+                    text_id = ""
+                    for user_data_id in data3:
+                        text_id = text_id + " " + user_data_id
+                        
+                    message = f"Voting result is incompatible with the majority. You may need to check. {text_id}"
+                    message_list_true.append([message, channel_id])
+                    txhash_true_data.append(txhash)
+
+    if int(min_status * (vote_true + vote_false) / 100) > vote_false:
         for message_i in message_list:
             await Bot.get_channel(int(message_i[1])).send(message_i[0])
     else:
-        if len(message_list_true) > 0:
-            text_id = ""
-            for user_data_id in message_list_true:
-                text_id = text_id + " " + user_data_id[0]
-                channel_id = user_data_id[1]
-
-            await Bot.get_channel(int(channel_id)).send(f"Voting result is incompatible with the majority. You may need to check. {text_id}")
+        for message_i in message_list_true:
+            await Bot.get_channel(int(message_i[1])).send(message_i[0])
 
 ## register app ##
 @Bot.event
@@ -170,6 +184,8 @@ async def on_message(message):
             new_min_status = int(msg_list[1])
             global min_status
             min_status = new_min_status
+            txhash_data.clear()
+            txhash_true_data.clear()
             await Bot.get_channel(int(message.channel.id)).send(f"Successful & Min: {str(min_status)}")
         except:
             await Bot.get_channel(int(message.channel.id)).send(f"Please enter number.")
