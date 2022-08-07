@@ -9,7 +9,7 @@ mkdir $HOME/voter && cd $HOME/voter
 wget https://raw.githubusercontent.com/Errorist79/axelar-vote-notify/main/app.py
 ```
 
-deps
+Deps
 
 ```bash
 sudo apt-get install software-properties-common -y
@@ -28,7 +28,7 @@ Start
 python3 app.py
 ```
 
-## environments
+## Environments
 ```bash
 TOKEN = "#PUT_YOUR_BOT_TOKEN_HERE"
 query_time = #API_QUERY_TIME_SEC
