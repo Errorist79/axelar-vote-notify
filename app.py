@@ -233,8 +233,8 @@ async def on_message(message):
                     await Bot.get_channel(int(message.channel.id)).send(f"Hey {text_id}, successfully saved.")
         else:
             if API == None:
-                await Bot.get_channel(int(message.channel.id)).send(f"Dear <@{msg.author.id}>, successfully deleted.")
+                await Bot.get_channel(int(message.channel.id)).send(f"Hey <@{msg.author.id}>, successfully deleted.")
             else:
-                await Bot.get_channel(int(message.channel.id)).send(f"Dear <@{msg.author.id}>, successfully saved.")
+                await Bot.get_channel(int(message.channel.id)).send(f"Hey <@{msg.author.id}>, successfully saved.")
 
 Bot.run(TOKEN)
